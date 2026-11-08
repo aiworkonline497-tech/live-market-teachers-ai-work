@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Market Teacher Pro 2.0 multi-timeframe market analysis dashboard">
+  <title>Market Teacher Pro 2.0</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="https://unpkg.com/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">MT</div>
+        <div><div class="brand-name">MARKET TEACHER <span>PRO 2.0</span></div><div class="brand-sub">MULTI-ASSET MARKET INTELLIGENCE</div></div>
+      </div>
+      <div class="top-actions">
+        <span class="live-dot"></span><span id="connectionText">CONNECTING</span>
+        <button id="settingsToggle" class="refresh-btn" type="button">⚙ API Settings</button>
+        <button id="refreshBtn" class="refresh-btn">↻ Refresh</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero-row">
+        <div>
+          <div class="eyebrow">MARKET OVERVIEW</div>
+          <h1>Read the market.<br><span>Not just the candles.</span></h1>
+          <p class="hero-copy">Trend, momentum, volume pressure and multi-timeframe confirmation in one workspace.</p>
+        </div>
+        <div class="market-clock"><span class="live-dot"></span><span>LIVE DATA VIEW</span><strong id="clock">--:--:--</strong><small id="updatedAt">Waiting for first update</small></div>
+      </section>
+
+      <section class="panel api-settings" id="apiSettings" hidden>
+        <div class="panel-heading"><span>TWELVE DATA API SETTINGS</span><span class="pill" id="apiStatus">NOT CONFIGURED</span></div>
+        <p class="api-help">Paste your Twelve Data API key below. It will be saved only in this browser on this device.</p>
+        <div class="api-entry">
+          <div class="api-input-wrap">
+            <label for="apiKeyInput">TWELVE DATA API KEY</label>
+            <input id="apiKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="Paste your Twelve Data API key">
+          </div>
+          <button id="saveApiKey" class="refresh-btn primary-action" type="button">Save Key</button>
+          <button id="testApiKey" class="refresh-btn" type="button">Test & Load</button>
+          <button id="clearApiKey" class="refresh-btn danger-action" type="button">Clear</button>
+        </div>
+        <div id="apiMessage" class="api-message">Your key is sent to this site's Netlify Function over HTTPS. It is not written into the project files.</div>
+        <p class="api-warning">Security note: browser storage is convenient, but the key can be viewed by someone with access to this browser or its developer tools. Do not use a shared/public computer.</p>
+      </section>
+
+      <section class="controls panel">
+        <div class="control-block">
+          <label for="assetSelect">MARKET</label>
+          <select id="assetSelect">
+            <optgroup label="Forex"><option value="EUR/USD">EUR/USD</option><option value="GBP/USD">GBP/USD</option><option value="USD/JPY">USD/JPY</option><option value="EUR/GBP">EUR/GBP</option><option value="AUD/USD">AUD/USD</option><option value="USD/CHF">USD/CHF</option></optgroup>
+            <optgroup label="Metals"><option value="XAU/USD">GOLD · XAU/USD</option></optgroup>
+            <optgroup label="Crypto"><option value="BTC/USD">BITCOIN · BTC/USD</option><option value="ETH/USD">ETHEREUM · ETH/USD</option></optgroup>
+          </select>
+        </div>
+        <div class="control-block timeframe-control">
+          <label>TIMEFRAME</label>
+          <div class="timeframes" id="timeframes">
+            <button data-tf="1min" class="active">1m</button><button data-tf="2min">2m</button><button data-tf="5min">5m</button><button data-tf="10min">10m</button><button data-tf="15min">15m</button><button data-tf="30min">30m</button><button data-tf="1h">1h</button><button data-tf="2h">2h</button><button data-tf="4h">4h</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="signal-grid">
+        <article class="panel signal-panel">
+          <div class="panel-heading"><span>PRIMARY MARKET SIGNAL</span><span class="pill" id="signalTimeframe">1 MIN</span></div>
+          <div id="signalCard" class="signal-card neutral">
+            <div class="signal-symbol" id="signalSymbol">EUR/USD</div>
+            <div class="signal-word" id="signalWord">WAITING</div>
+            <div class="signal-description" id="signalReason">Fetching market data and calculating indicators…</div>
+          </div>
+          <div class="signal-meta">
+            <div><span>MODEL SCORE</span><strong id="modelScore">—</strong></div>
+            <div><span>CONFIRMATIONS</span><strong id="confirmations">—</strong></div>
+            <div><span>LAST PRICE</span><strong id="lastPrice">—</strong></div>
+          </div>
+          <div class="disclaimer">Analysis output, not a guaranteed prediction or financial advice.</div>
+        </article>
+
+        <article class="panel pressure-panel">
+          <div class="panel-heading"><span>BUYER / SELLER PRESSURE</span><span class="pill" id="pressureSource">ESTIMATE</span></div>
+          <div class="pressure-numbers"><div><strong class="green-text" id="buyPct">—</strong><span>BUY PRESSURE</span></div><div class="align-right"><strong class="red-text" id="sellPct">—</strong><span>SELL PRESSURE</span></div></div>
+          <div class="pressure-track"><div id="buyBar" class="buy-bar" style="width:50%"></div><div id="sellBar" class="sell-bar" style="width:50%"></div></div>
+          <div class="pressure-note" id="pressureNote">Pressure estimate will appear after data loads.</div>
+          <div class="mini-stats">
+            <div><span>VOLUME</span><strong id="volumeValue">—</strong></div>
+            <div><span>VOLUME TREND</span><strong id="volumeTrend">—</strong></div>
+            <div><span>ADX</span><strong id="adxValue">—</strong></div>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel chart-panel">
+        <div class="panel-heading"><span>PRICE ACTION</span><span class="chart-caption" id="chartCaption">EUR/USD · 1m</span></div>
+        <div id="chart" class="chart"></div>
+      </section>
+
+      <section class="lower-grid">
+        <article class="panel">
+          <div class="panel-heading"><span>INDICATOR CHECKLIST</span><span class="pill">LIVE CALCULATION</span></div>
+          <div id="indicatorList" class="indicator-list"><div class="empty">Waiting for market data…</div></div>
+        </article>
+        <article class="panel">
+          <div class="panel-heading"><span>MULTI-TIMEFRAME BIAS</span><span class="pill">CONTEXT</span></div>
+          <div id="mtfList" class="mtf-list"><div class="empty">Select a market to load analysis.</div></div>
+        </article>
+      </section>
+
+      <section class="panel methodology">
+        <div class="panel-heading"><span>DATA & METHODOLOGY</span><span class="pill">TRANSPARENT MODEL</span></div>
+        <div class="method-grid">
+          <div><b>Twelve Data</b><p>Primary OHLC price feed. Forex volume, where supplied, is treated as tick/activity volume rather than centralized exchange volume.</p></div>
+          <div><b>Binance public data</b><p>Crypto cross-check using candles and recent aggressive buy/sell trade flow. Exchange-specific, not the whole crypto market.</p></div>
+          <div><b>Signal scoring</b><p>EMA trend, RSI, MACD, ADX, candle structure and volume pressure. NEUTRAL is returned when evidence is mixed or insufficient.</p></div>
+        </div>
+        <div id="statusMessage" class="status-message">Ready.</div>
+      </section>
+    </main>
+    <footer>MARKET TEACHER PRO 2.0 <span>Built for analysis · Trade decisions remain yours</span></footer>
+  </div>
+  <script src="/app.js"></script>
+</body>
+</html>
